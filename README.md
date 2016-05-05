@@ -1,3 +1,5 @@
+# Incomplete documentation; moving target so the API has changed
+
 # Params Helper (my_rails_helpers-params_helper)
 
 Helper with dealing with params that are passed from the view/form to the controller then to the renderer/view to be displayed back to the user.

@@ -71,6 +71,11 @@ module MyRailsHelpers
         boolean_check(val)
       end
 
+      # Used when loading values from memory
+      def value=(val)
+        @param = val
+      end
+
       # Is the value a default value that was set in configuration.
       #
       # Returns true if:
@@ -168,6 +173,15 @@ module MyRailsHelpers
 
       def find(name)
         @options.select {|opt| opt.name == name.to_sym || opt.name == name.to_s }.first
+      end
+
+      def value=(ary)
+        ary.reject(&:blank?).each { |key| if get(key); get(key).value = true end }
+      end
+
+      # Gets the option from the collection using the key/name
+      def get(key)
+        @options.select { |opt| opt.name == key.to_sym || opt.name == key.to_s }.first
       end
 
       # Limited with what this can be used for, more a helper

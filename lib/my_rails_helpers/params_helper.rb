@@ -14,7 +14,7 @@ module MyRailsHelpers
     end
 
     def self.debug(msg)
-      false && puts("\e[32m[D] #{msg}\e[0m"); 
+      ENV['DEBUG'] and puts("\e[32m[D:ParamsHelper] #{msg}\e[0m"); 
     end
   end
 end

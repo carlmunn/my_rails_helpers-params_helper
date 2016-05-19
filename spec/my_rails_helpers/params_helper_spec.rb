@@ -221,4 +221,12 @@ describe MyRailsHelpers::ParamsHelper do
       expect(toggler.get(:test).value).to eql 'other-option'
     end
   end
+
+  context 'setting option' do
+    it 'should test setting the value' do
+      toggler = new_toggle({}, {option: {val: nil}})
+      toggler.get(:option).value = 'new-value'
+      expect(toggler.get(:option).value).to eql 'new-value'
+    end
+  end
 end

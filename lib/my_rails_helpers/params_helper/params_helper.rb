@@ -8,12 +8,6 @@
 
 # Usage?
 
-def _debug?
-  true
-end
-
-def _debug(msg) _debug? && puts("\e[32m[D] #{msg}\e[0m"); end
-
 module MyRailsHelpers
   module ParamsHelper
     class Toggler
@@ -25,14 +19,11 @@ module MyRailsHelpers
         @fresh   = !params
         @params  = (params ? params.dup : {})
         @opts    = OptionBase.parse(opts, params)
-
-        @backend = ENV['RAILS_ENV'] ? AptRedis.new : TestBackend.new
-
+        
         # Clean up the original params, we don't need to show defaults in the params
         filter_defaults(params) if params
 
-        _debug("Setup: fresh:#{@fresh}\n\nparams: #{@params}\n\nopts: #{@opts}")
-        # _debug("Fresh: #{@fresh}")
+        #_debug("Setup: fresh:#{@fresh}\n\nparams: #{@params}\n\nopts: #{@opts}")
       end
 
       # Gets the value if defined, otherwise it returns the default value
@@ -62,22 +53,21 @@ module MyRailsHelpers
         r[key] = !r[key] if _is_bool?(r[key]) # Flip
       end
 
-      # TODO: not implemented yet
-      #def check(key, option=nil)
-      #  find(key).check(option || fetch_param(key))
-      #end
-
-      # Old way
-      # def is_selected(key, option=nil)
-      #   raise 'Not used anymore!'
-      #   get_param(key) == fetch_param(key) || fetch_param(key) == option
-      # end
+      # This isn't going to work well when the form needs to reverse
+      # the value because it was used in the controller.
+      def method_missing(method, *args)
+        if opt = get(method)
+          opt.value
+        else
+          raise NoMethodError, method
+        end
+      end
 
     private
       # Returns array/value for the specified option
       def get_selected(key)
         option = find(key)
-        
+
         if option.is_a?(Option)
           _debug("get_selected: found Option #{option}")
           option
@@ -126,8 +116,8 @@ module MyRailsHelpers
       # things nicer to look at.
       def filter_defaults(params)
         @opts.each do |k, v|
-          if _blank?(get_param(k)) || get_param(k) == get_default(k)
-            params.delete(k)
+          if _blank?(get_param(k.name)) || get_param(k.name) == get_default(k.name)
+            params.delete(k.name)
           end
         end
 
@@ -170,6 +160,7 @@ module MyRailsHelpers
       end
 
       def get_default(key)
+
         val = find(key)
 
         if val.is_a?(Hash)
@@ -177,9 +168,6 @@ module MyRailsHelpers
         else
           val
         end
-
-        # ORIG
-        #(v = get_opt_values(key)) && v.is_a?(Hash) ? v : v
       end
 
       # Dealing with boolean internally
@@ -199,7 +187,7 @@ module MyRailsHelpers
       end
 
       def find(key)
-        @opts.select {|obj| obj.name == key }
+        @opts.select {|obj| obj.name == key.to_sym || obj.name == key.to_s }
       end
 
       # This is native in Rails
